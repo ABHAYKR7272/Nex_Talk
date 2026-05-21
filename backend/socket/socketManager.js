@@ -66,11 +66,39 @@ module.exports = (io) => {
       } catch {}
     });
 
-    socket.on('callUser',     ({ targetId, callType, offer })  => io.to(targetId).emit('incomingCall',  { callerId: uid, callerName: socket.user.displayName, callType, offer }));
-    socket.on('callAccepted', ({ callerId, answer })            => io.to(callerId).emit('callAnswered',  { answer, acceptorId: uid }));
-    socket.on('callRejected', ({ callerId })                    => io.to(callerId).emit('callRejected',  { by: uid }));
-    socket.on('iceCandidate', ({ targetId, candidate })         => io.to(targetId).emit('iceCandidate', { candidate, from: uid }));
-    socket.on('endCall',      ({ targetId })                    => io.to(targetId).emit('callEnded',     { by: uid }));
+    // ── WebRTC signaling ──────────────────────────────────────
+    socket.on('callUser', ({ targetId, callType, offer, isRestart }) => {
+      if (!targetId || !offer) return;
+      console.log(`[CALL] ${uid} → ${targetId} (${callType}${isRestart?' restart':''})`);
+      if (isRestart) {
+        // ICE restart — send as iceRestart to existing call
+        io.to(targetId).emit('iceRestart', { from: uid, offer });
+      } else {
+        io.to(targetId).emit('incomingCall', { callerId: uid, callerName: socket.user.displayName, callType, offer });
+      }
+    });
+
+    socket.on('callAccepted', ({ callerId, answer }) => {
+      if (!callerId || !answer) return;
+      console.log(`[CALL] ${uid} accepted call from ${callerId}`);
+      io.to(callerId).emit('callAnswered', { answer, acceptorId: uid });
+    });
+
+    socket.on('callRejected', ({ callerId }) => {
+      if (!callerId) return;
+      io.to(callerId).emit('callRejected', { by: uid });
+    });
+
+    socket.on('iceCandidate', ({ targetId, candidate }) => {
+      if (!targetId || !candidate) return;
+      io.to(targetId).emit('iceCandidate', { candidate, from: uid });
+    });
+
+    socket.on('endCall', ({ targetId }) => {
+      if (!targetId) return;
+      console.log(`[CALL] ${uid} ended call with ${targetId}`);
+      io.to(targetId).emit('callEnded', { by: uid });
+    });
 
     socket.on('notifyFollow',  ({ targetId }) => io.to(targetId).emit('followRequest',  { from: { _id: uid, username: socket.user.username, displayName: socket.user.displayName } }));
     socket.on('notifyAccept',  ({ toId })     => io.to(toId).emit('followAccepted',     { by:   { _id: uid, username: socket.user.username } }));
