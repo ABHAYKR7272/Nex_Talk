@@ -1282,7 +1282,7 @@ a{color:var(--neon1);text-decoration:none}
 // For local dev: keep as is (auto-detects localhost)
 // For production: replace RENDER_URL with your Render backend URL
 //   e.g. 'https://nextalk-backend.onrender.com'
-const RENDER_URL = 'https://nex-talk-3sv7.onrender.com'; // ← change this after deploy
+const RENDER_URL = 'https://nex-talk-akn72.vercel.app/'; // ← change this after deploy
 
 const CFG = (() => {
   const isLocal = ['localhost','127.0.0.1'].includes(window.location.hostname);
@@ -1294,7 +1294,7 @@ const S = {
   user:null, token:null, socket:null,
   activeUid:null, activeName:null, activeUname:null,
   callData:null, localStream:null, pc:null,
-  callTimer:null, callSecs:0, tyTimer:null,
+  callTimer:null, callSecs:0, tyTimer:null, _iceBuf:[],
   menuOpen:false, viewStack:[],
   facingMode:'user', // for camera flip
   isMobile:()=>window.innerWidth<768,
@@ -1473,7 +1473,29 @@ const App={
       sk.on('callAnswered',data=>App.call.onAnswered(data));
       sk.on('callRejected',()=>{toast('Call declined.','info');App.call._cleanup();});
       sk.on('callEnded',()=>App.call._cleanup());
-      sk.on('iceCandidate',async({candidate})=>{try{if(S.pc&&candidate)await S.pc.addIceCandidate(new RTCIceCandidate(candidate));}catch{}});
+      // ICE restart from remote peer
+      sk.on('iceRestart',async({from,offer})=>{
+        if(!S.pc||!offer)return;
+        try{
+          await S.pc.setRemoteDescription(new RTCSessionDescription(offer));
+          const answer=await S.pc.createAnswer();
+          await S.pc.setLocalDescription(answer);
+          App.socket.emit('callAccepted',{callerId:from,answer});
+          console.log('ICE restart handled');
+        }catch(e){console.error('ICE restart handle failed:',e);}
+      });
+      sk.on('iceCandidate',async({candidate})=>{
+        if(!candidate)return;
+        if(S.pc&&S.pc.remoteDescription&&S.pc.remoteDescription.type){
+          // remoteDescription already set — add directly
+          try{await S.pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){console.warn('ICE add err:',e);}
+        } else {
+          // Buffer candidates until remoteDescription is set
+          S._iceBuf=S._iceBuf||[];
+          S._iceBuf.push(candidate);
+          console.log('ICE buffered, total:',S._iceBuf.length);
+        }
+      });
       App.socket.emit=(...a)=>sk.emit(...a);
     },
     emit(){}
@@ -1891,6 +1913,7 @@ const App={
 
     async start(type){
       if(!S.activeUid)return toast('Open a chat first.','err');
+      S._iceBuf=[];
       App.call.type=type;App.call.targetId=S.activeUid;App.call.targetName=S.activeName;
       const _constraints1 = type==='video'
         ? {video:{facingMode:S.facingMode,width:{ideal:1280},height:{ideal:720}},audio:{echoCancellation:true,noiseSuppression:true}}
@@ -1934,20 +1957,36 @@ const App={
       App.call._openOverlay(callType,callerName,callerId);
       txt('callPhSt','Connected');App.call._startTimer();
       if(callType==='video'){$('callLV').srcObject=S.localStream;$('callLV').style.display='block';}
+      S._iceBuf=[];
       App.call._createPC();
       S.localStream.getTracks().forEach(t=>S.pc.addTrack(t,S.localStream));
-      await S.pc.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer=await S.pc.createAnswer();
-      await S.pc.setLocalDescription(answer);
-      App.socket.emit('callAccepted',{callerId,answer});
+      try{
+        await S.pc.setRemoteDescription(new RTCSessionDescription(offer));
+        // Flush any buffered ICE candidates
+        const buf=S._iceBuf||[];S._iceBuf=[];
+        for(const c of buf){try{await S.pc.addIceCandidate(new RTCIceCandidate(c));}catch{}}
+        const answer=await S.pc.createAnswer();
+        await S.pc.setLocalDescription(answer);
+        App.socket.emit('callAccepted',{callerId,answer});
+      }catch(e){console.error('accept() WebRTC error:',e);toast('Failed to connect call.','err');App.call._cleanup();}
       S.callData=null;
     },
 
     reject(){clearTimeout(S._callDismiss);$('incomingCall').classList.add('hidden');if(S.callData){App.socket.emit('callRejected',{callerId:S.callData.callerId});S.callData=null;}},
 
     async onAnswered({answer}){
-      txt('callPhSt','Connected');App.call._startTimer();
-      if(S.pc){try{await S.pc.setRemoteDescription(new RTCSessionDescription(answer));}catch{}}
+      if(!S.pc)return;
+      try{
+        await S.pc.setRemoteDescription(new RTCSessionDescription(answer));
+        // Flush any ICE candidates that arrived before remote desc was set
+        const buf=S._iceBuf||[];
+        S._iceBuf=[];
+        for(const c of buf){
+          try{await S.pc.addIceCandidate(new RTCIceCandidate(c));}catch(e){console.warn('Flush ICE err:',e);}
+        }
+        console.log('Remote desc set, flushed',buf.length,'buffered ICE candidates');
+        txt('callPhSt','Connecting...');
+      }catch(e){console.error('setRemoteDescription (caller) failed:',e);toast('Call connection failed.','err');App.call._cleanup();}
     },
 
     end(){App.socket.emit('endCall',{targetId:App.call.targetId});App.call._cleanup();},
@@ -2006,24 +2045,101 @@ const App={
     },
 
     _createPC(){
+      // Clean up any old PC
+      if(S.pc){try{S.pc.close();}catch{}S.pc=null;}
+
       S.pc=new RTCPeerConnection(App.call.ICE);
-      S.pc.onicecandidate=({candidate})=>{if(candidate)App.socket.emit('iceCandidate',{targetId:App.call.targetId,candidate});};
-      S.pc.ontrack=({streams})=>{
-        if(streams&&streams[0]){
-          const rv=$('callRV');
-          rv.srcObject=streams[0];
-          if(App.call.type==='video'){rv.style.display='block';$('callPh').style.display='none';}
-          // iOS requires explicit play() after srcObject set
-          rv.play().catch(()=>{});
+
+      // ── ICE candidate → send to other peer ──
+      S.pc.onicecandidate=({candidate})=>{
+        if(candidate){
+          App.socket.emit('iceCandidate',{targetId:App.call.targetId,candidate});
         }
       };
+
+      // ── Remote stream arrived ──
+      S.pc.ontrack=(event)=>{
+        console.log('ontrack fired, streams:',event.streams?.length,'track kind:',event.track?.kind);
+        const stream=event.streams?.[0];
+        if(!stream)return;
+        const rv=$('callRV');
+        // Only set srcObject if it changed (avoids flicker)
+        if(rv.srcObject!==stream){
+          rv.srcObject=stream;
+          console.log('Remote stream set on video element');
+        }
+        if(App.call.type==='video'){
+          rv.style.display='block';
+          $('callPh').style.display='none';
+        }
+        // iOS/Safari REQUIRE explicit play() call
+        rv.play().catch(e=>console.warn('rv.play() error:',e));
+      };
+
+      // ── Connection state ──
       S.pc.onconnectionstatechange=()=>{
         const state=S.pc?.connectionState;
-        console.log('WebRTC state:',state);
-        if(state==='connected'&&!S.callTimer)App.call._startTimer();
-        if(['failed','disconnected','closed'].includes(state))App.call._cleanup();
+        console.log('Connection state:',state);
+        if(state==='connected'){
+          txt('callPhSt','Connected ✓');
+          if(!S.callTimer)App.call._startTimer();
+        }else if(state==='connecting'){
+          txt('callPhSt','Connecting...');
+        }else if(state==='failed'){
+          console.error('WebRTC connection FAILED');
+          toast('Call connection failed. Check network.','err');
+          App.call._cleanup();
+        }else if(state==='disconnected'){
+          txt('callPhSt','Reconnecting...');
+          // Wait 5s before cleanup (may auto-recover)
+          clearTimeout(S._dcTimer);
+          S._dcTimer=setTimeout(()=>{
+            if(S.pc?.connectionState==='disconnected'){
+              App.call._cleanup();
+            }
+          },5000);
+        }else if(state==='closed'){
+          App.call._cleanup();
+        }
       };
-      S.pc.oniceconnectionstatechange=()=>console.log('ICE:',S.pc?.iceConnectionState);
+
+      // ── ICE connection state (more granular) ──
+      S.pc.oniceconnectionstatechange=()=>{
+        const st=S.pc?.iceConnectionState;
+        console.log('ICE connection state:',st);
+        if(st==='connected'||st==='completed'){
+          txt('callPhSt','Connected ✓');
+          if(!S.callTimer)App.call._startTimer();
+        }
+        if(st==='failed'){
+          console.error('ICE FAILED — trying ICE restart');
+          // Try ICE restart before giving up
+          if(S.pc&&S.pc.signalingState==='stable'){
+            App.call._iceRestart();
+          }
+        }
+      };
+
+      // ── ICE gathering state ──
+      S.pc.onicegatheringstatechange=()=>{
+        console.log('ICE gathering:',S.pc?.iceGatheringState);
+      };
+
+      // ── Negotiation needed (for renegotiation) ──
+      S.pc.onnegotiationneeded=()=>{
+        console.log('Negotiation needed');
+      };
+    },
+
+    // ICE restart on failure
+    async _iceRestart(){
+      if(!S.pc)return;
+      try{
+        const offer=await S.pc.createOffer({iceRestart:true});
+        await S.pc.setLocalDescription(offer);
+        App.socket.emit('callUser',{targetId:App.call.targetId,callType:App.call.type,offer,isRestart:true});
+        console.log('ICE restart offer sent');
+      }catch(e){console.error('ICE restart failed:',e);}
     },
 
     _openOverlay(type,name,uid){
