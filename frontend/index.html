@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#050712">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,18 +27,8 @@
   --glow-p:0 0 20px rgba(124,106,245,.4),0 0 40px rgba(124,106,245,.15);
   --glow-n:0 0 20px rgba(0,245,255,.35),0 0 40px rgba(0,245,255,.1);
   --r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;--r50:50%;
-
-  /* Safe area insets for notch/home bar */
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-top: env(safe-area-inset-top, 0px);
 }
-html,body{
-  height:100%;
-  height:100dvh;
-  font-family:'Sora',sans-serif;background:var(--bg0);color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased;
-  overscroll-behavior:none;
-  position:fixed;width:100%;
-}
+html,body{height:100%;font-family:'Sora',sans-serif;background:var(--bg0);color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased}
 button,input,textarea,select{font-family:inherit;outline:none;border:none}
 img{display:block;max-width:100%}
 ::-webkit-scrollbar{width:3px;height:3px}
@@ -129,7 +119,7 @@ a{color:var(--neon1);text-decoration:none}
 
 /* INPUTS */
 .inp{background:var(--bg2);border:1.5px solid var(--bd);border-radius:var(--r12);
-     padding:11px 14px;color:var(--t1);font-size:16px;width:100%;transition:all .2s}
+     padding:11px 14px;color:var(--t1);font-size:13px;width:100%;transition:all .2s}
 .inp:focus{border-color:var(--neon1);background:var(--bg1);
            box-shadow:0 0 0 3px rgba(0,245,255,.08),0 0 20px rgba(0,245,255,.05)}
 .inp::placeholder{color:var(--t3)}
@@ -365,7 +355,7 @@ a{color:var(--neon1);text-decoration:none}
 .sw input:checked+.sw-sl::before{transform:translateX(19px)}
 
 /* ═══ CHAT VIEW ═══ */
-#chatView{display:flex;flex-direction:column;height:100%;position:absolute;inset:0;overflow:hidden;}
+#chatView{display:flex;flex-direction:column;height:100%}
 .ch-head{display:flex;align-items:center;gap:8px;padding:10px 12px;
           border-bottom:1px solid var(--bd);flex-shrink:0;
           background:rgba(5,7,18,.95);backdrop-filter:blur(20px);position:relative;z-index:5}
@@ -387,7 +377,7 @@ a{color:var(--neon1);text-decoration:none}
 
 /* MESSAGES */
 .msgs-wrap{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:0;
-           scroll-behavior:smooth;min-height:0;-webkit-overflow-scrolling:touch}
+           scroll-behavior:smooth}
 .msg-day{text-align:center;font-size:10px;color:var(--t3);margin:14px 0;position:relative;letter-spacing:.5px}
 .msg-day::before,.msg-day::after{content:'';position:absolute;top:50%;width:35%;height:1px;background:var(--bd)}
 .msg-day::before{left:0}.msg-day::after{right:0}
@@ -458,13 +448,11 @@ a{color:var(--neon1);text-decoration:none}
 .mrow .media-bubble:hover .msg-actions{display:flex}
 
 /* INPUT AREA */
-.ch-inp{display:flex;align-items:flex-end;gap:7px;padding:10px 12px;
-         padding-bottom:max(12px,calc(env(safe-area-inset-bottom,0px) + 8px));
+.ch-inp{display:flex;align-items:flex-end;gap:7px;padding:8px 10px 8px;
          border-top:1px solid var(--bd);flex-shrink:0;
-         background:var(--bg1);
-         position:relative;z-index:5;width:100%;}
+         background:rgba(5,7,18,.95);backdrop-filter:blur(20px)}
 .ch-ta{flex:1;background:var(--bg2);border:1.5px solid var(--bd);border-radius:var(--r16);
-        padding:10px 14px;color:var(--t1);font-size:16px;resize:none;
+        padding:10px 14px;color:var(--t1);font-size:13px;resize:none;
         max-height:120px;min-height:42px;line-height:1.5;transition:all .2s;font-family:inherit}
 .ch-ta:focus{border-color:var(--neon1);box-shadow:0 0 0 3px rgba(0,245,255,.06)}
 .ch-ta::placeholder{color:var(--t3)}
@@ -618,36 +606,18 @@ a{color:var(--neon1);text-decoration:none}
 
 /* ═══ MOBILE RESPONSIVE ═══ */
 @media(max-width:767px){
-  #sidebar{position:fixed;inset:0;width:100%;min-width:unset;transform:translateX(0);z-index:20}
+  #sidebar{position:absolute;inset:0;width:100%;min-width:unset;transform:translateX(0)}
   #sidebar.sb-hidden{transform:translateX(-100%)}
-  #mainPanel{position:fixed;inset:0;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:21}
+  #mainPanel{position:absolute;inset:0;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
   #mainPanel.mp-show{transform:translateX(0)}
-  /* CRITICAL: chatView must be full height flex column */
-  #chatView{
-    position:absolute;inset:0;
-    display:flex!important;flex-direction:column!important;
-    height:100%!important;overflow:hidden!important;
-  }
-  /* Messages take all available space, allow scrolling */
-  .msgs-wrap{flex:1!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;min-height:0!important;}
-  /* Input bar stays at bottom, visible above home indicator */
-  .ch-inp{
-    flex-shrink:0!important;
-    padding-bottom:max(12px,calc(env(safe-area-inset-bottom,0px) + 8px))!important;
-    position:relative!important;z-index:5!important;
-  }
-  /* textarea font 16px prevents iOS zoom */
-  .ch-ta{font-size:16px!important;}
   .frow{grid-template-columns:1fr}
   .pv-stats{gap:18px}
-  .bub{max-width:min(80%,300px)}
+  #welcomeView{display:none!important}
+  .bub{max-width:min(78%,280px)}
   .bub-img-wrap,.bub-vid-wrap{max-width:200px;width:200px}
-  #callOverlay.pip-mode{width:150px;height:210px;bottom:max(90px,calc(80px + env(safe-area-inset-bottom,0px)));right:10px}
-  .call-ctrl{bottom:max(20px,calc(env(safe-area-inset-bottom,0px) + 16px));gap:8px;padding:10px 16px}
-  .cctrl{width:50px;height:50px;border-radius:25px}
-  /* Bigger tap targets */
-  .bico,.bico-sm{min-width:44px;min-height:44px}
-  .nav-tab{padding:13px 4px;min-height:48px}
+  #callOverlay.pip-mode{width:150px;height:210px;bottom:90px;right:10px}
+  .call-ctrl{bottom:20px;gap:8px;padding:8px 16px}
+  .cctrl{width:48px;height:48px;border-radius:24px}
 }
 @media(min-width:768px) and (max-width:1023px){#sidebar{width:260px;min-width:260px}}
 @media(min-width:1024px){#sidebar{width:300px;min-width:300px}}
@@ -1294,7 +1264,7 @@ const S = {
   user:null, token:null, socket:null,
   activeUid:null, activeName:null, activeUname:null,
   callData:null, localStream:null, pc:null,
-  callTimer:null, callSecs:0, tyTimer:null, _iceBuf:[],
+  callTimer:null, callSecs:0, tyTimer:null,
   menuOpen:false, viewStack:[],
   facingMode:'user', // for camera flip
   isMobile:()=>window.innerWidth<768,
@@ -1473,28 +1443,11 @@ const App={
       sk.on('callAnswered',data=>App.call.onAnswered(data));
       sk.on('callRejected',()=>{toast('Call declined.','info');App.call._cleanup();});
       sk.on('callEnded',()=>App.call._cleanup());
-      // ICE restart from remote peer
-      sk.on('iceRestart',async({from,offer})=>{
-        if(!S.pc||!offer)return;
-        try{
-          await S.pc.setRemoteDescription(new RTCSessionDescription(offer));
-          const answer=await S.pc.createAnswer();
-          await S.pc.setLocalDescription(answer);
-          App.socket.emit('callAccepted',{callerId:from,answer});
-          console.log('ICE restart handled');
-        }catch(e){console.error('ICE restart handle failed:',e);}
-      });
+      // ICE candidate — direct add, no buffering (ChatRix proven)
       sk.on('iceCandidate',async({candidate})=>{
-        if(!candidate)return;
-        if(S.pc&&S.pc.remoteDescription&&S.pc.remoteDescription.type){
-          // remoteDescription already set — add directly
-          try{await S.pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){console.warn('ICE add err:',e);}
-        } else {
-          // Buffer candidates until remoteDescription is set
-          S._iceBuf=S._iceBuf||[];
-          S._iceBuf.push(candidate);
-          console.log('ICE buffered, total:',S._iceBuf.length);
-        }
+        if(!candidate||!S.pc)return;
+        try{await S.pc.addIceCandidate(new RTCIceCandidate(candidate));console.log('[ICE] Added OK');}
+        catch(e){console.warn('[ICE] Add error:',e.message);}
       });
       App.socket.emit=(...a)=>sk.emit(...a);
     },
@@ -1522,15 +1475,10 @@ const App={
     showView(id){
       ['welcomeView','searchView','profileView','myProfileView','chatView'].forEach(v=>{
         const el=$(v);if(!el)return;
-        if(v===id){
-          el.classList.remove('hidden');
-          el.style.display='flex';
-          if(v==='chatView')el.style.flexDirection='column';
-        }else{
-          el.classList.add('hidden');
-          el.style.display='none';
-        }
+        el.classList.toggle('hidden',v!==id);
+        el.style.display=v===id?(v==='searchView'?'flex':''):'none';
       });
+      // avoid duplicate stack entries
       if(S.viewStack[S.viewStack.length-1]!==id)S.viewStack.push(id);
       if(S.isMobile()){$('sidebar').classList.add('sb-hidden');$('mainPanel').classList.add('mp-show');}
     },
@@ -1882,7 +1830,7 @@ const App={
       App.socket.emit('typing',{receiverId:S.activeUid});
       clearTimeout(S.tyTimer);S.tyTimer=setTimeout(()=>App.socket.emit('stopTyping',{receiverId:S.activeUid}),1500);
     },
-    onKey(e){if(e.key==='Enter'&&!e.shiftKey&&!S.isMobile()){e.preventDefault();App.chat.send();}},
+    onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();App.chat.send();}},
     showTyping(){const el=$('tyWrap');if(el){el.classList.remove('hidden');el.style.display='flex';}setAv($('tyAv'),S.activeName||'?',S.activeUid);App.chat._scroll();},
     hideTyping(){const el=$('tyWrap');if(el){el.classList.add('hidden');el.style.display='';}},
     markRead(){document.querySelectorAll('.mrow.me .tick').forEach(el=>{el.classList.add('tick-r');el.textContent='✓✓';});},
@@ -1899,94 +1847,119 @@ const App={
   },
 
   call:{
-    ICE:{iceServers:[
-      {urls:'stun:stun.l.google.com:19302'},
-      {urls:'stun:stun1.l.google.com:19302'},
-      {urls:'stun:stun2.l.google.com:19302'},
-      {urls:'stun:stun3.l.google.com:19302'},
-      {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
-      {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
-      {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
-    ]},
+    // ICE config — fetched dynamically from backend (professional approach)
+    // Credentials are never hardcoded in frontend (security best practice)
+    ICE:null,
     type:null,targetId:null,targetName:null,
     micMuted:false,camOff:false,_pip:false,
 
+    // ── Start outgoing call ──
     async start(type){
       if(!S.activeUid)return toast('Open a chat first.','err');
-      S._iceBuf=[];
       App.call.type=type;App.call.targetId=S.activeUid;App.call.targetName=S.activeName;
-      const _constraints1 = type==='video'
-        ? {video:{facingMode:S.facingMode,width:{ideal:1280},height:{ideal:720}},audio:{echoCancellation:true,noiseSuppression:true}}
-        : {audio:{echoCancellation:true,noiseSuppression:true}};
-      try{S.localStream=await navigator.mediaDevices.getUserMedia(_constraints1);}
-      catch(err1){
-        try{S.localStream=await navigator.mediaDevices.getUserMedia(type==='video'?{video:true,audio:true}:{audio:true});}
-        catch{return toast('Camera/Mic permission required. Please allow in browser settings.','err',5000);}
-      }
+
+      // Get media with fallback
+      S.localStream=await App.call._getMedia(type);
+      if(!S.localStream)return;
+
       App.call._openOverlay(type,S.activeName,S.activeUid);
       if(type==='video'){$('callLV').srcObject=S.localStream;$('callLV').style.display='block';}
+
+      // Fetch fresh TURN credentials from backend (professional)
+      App.call.ICE = {iceServers: await App.call._fetchICE()};
+      // Create PC → add tracks → create offer (ChatRix order)
       App.call._createPC();
       S.localStream.getTracks().forEach(t=>S.pc.addTrack(t,S.localStream));
-      const offer=await S.pc.createOffer();
-      await S.pc.setLocalDescription(offer);
-      App.socket.emit('callUser',{targetId:S.activeUid,callType:type,offer});
+      try{
+        const offer=await S.pc.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:true});
+        await S.pc.setLocalDescription(offer);
+        App.socket.emit('callUser',{targetId:S.activeUid,callType:type,offer});
+        console.log('[CALL] Offer sent');
+      }catch(e){console.error('[CALL] Offer error:',e);toast('Failed to start call.','err');App.call._cleanup();}
     },
 
+    // ── Fetch TURN credentials from backend (like Telegram/Instagram) ──
+    async _fetchICE(){
+      try{
+        const d = await GET('/auth/turn-credentials');
+        console.log('[ICE] Fetched',d.iceServers?.length,'servers from backend');
+        return d.iceServers;
+      }catch(e){
+        console.warn('[ICE] Fetch failed, using STUN only:',e.message);
+        return [
+          {urls:'stun:stun.l.google.com:19302'},
+          {urls:'stun:stun1.l.google.com:19302'},
+        ];
+      }
+    },
+
+    // ── Get media with fallbacks ──
+    async _getMedia(type){
+      try{
+        return await navigator.mediaDevices.getUserMedia(
+          type==='video'
+            ?{video:{width:{ideal:1280},height:{ideal:720},facingMode:S.facingMode},audio:{echoCancellation:true,noiseSuppression:true}}
+            :{audio:{echoCancellation:true,noiseSuppression:true}}
+        );
+      }catch(e){
+        console.warn('[MEDIA]',e.name);
+        try{return await navigator.mediaDevices.getUserMedia(type==='video'?{video:true,audio:true}:{audio:true});}
+        catch{toast('Camera/Mic permission required. Please allow in browser settings.','err',5000);return null;}
+      }
+    },
+
+    // ── Incoming call ──
     onIncoming(data){
       S.callData=data;
       setAv($('icAv'),data.callerName||'?',data.callerId);
       txt('icName',data.callerName||'Unknown');
       txt('icType',data.callType==='video'?'📹 Video Call':'📞 Voice Call');
       $('incomingCall').classList.remove('hidden');
+      clearTimeout(S._callDismiss);
       S._callDismiss=setTimeout(()=>{$('incomingCall').classList.add('hidden');S.callData=null;},30000);
     },
 
+    // ── Accept call (ChatRix webrtc_offer handler pattern) ──
     async accept(){
-      clearTimeout(S._callDismiss);$('incomingCall').classList.add('hidden');
+      clearTimeout(S._callDismiss);
+      $('incomingCall').classList.add('hidden');
       if(!S.callData)return;
       const{callerId,callerName,callType,offer}=S.callData;
+      S.callData=null;
       App.call.type=callType;App.call.targetId=callerId;App.call.targetName=callerName;
-      const _constraints2 = callType==='video'
-        ? {video:{facingMode:S.facingMode},audio:{echoCancellation:true,noiseSuppression:true}}
-        : {audio:{echoCancellation:true,noiseSuppression:true}};
-      try{S.localStream=await navigator.mediaDevices.getUserMedia(_constraints2);}
-      catch{
-        try{S.localStream=await navigator.mediaDevices.getUserMedia(callType==='video'?{video:true,audio:true}:{audio:true});}
-        catch{return toast('Camera/Mic permission required.','err');}
-      }
+
+      S.localStream=await App.call._getMedia(callType);
       App.call._openOverlay(callType,callerName,callerId);
-      txt('callPhSt','Connected');App.call._startTimer();
-      if(callType==='video'){$('callLV').srcObject=S.localStream;$('callLV').style.display='block';}
-      S._iceBuf=[];
+      if(callType==='video'&&S.localStream){$('callLV').srcObject=S.localStream;$('callLV').style.display='block';}
+
+      // Fetch fresh TURN credentials from backend
+      App.call.ICE = {iceServers: await App.call._fetchICE()};
+      // Create PC → add tracks → set remote → create answer
       App.call._createPC();
-      S.localStream.getTracks().forEach(t=>S.pc.addTrack(t,S.localStream));
+      if(S.localStream)S.localStream.getTracks().forEach(t=>S.pc.addTrack(t,S.localStream));
       try{
         await S.pc.setRemoteDescription(new RTCSessionDescription(offer));
-        // Flush any buffered ICE candidates
-        const buf=S._iceBuf||[];S._iceBuf=[];
-        for(const c of buf){try{await S.pc.addIceCandidate(new RTCIceCandidate(c));}catch{}}
         const answer=await S.pc.createAnswer();
         await S.pc.setLocalDescription(answer);
         App.socket.emit('callAccepted',{callerId,answer});
-      }catch(e){console.error('accept() WebRTC error:',e);toast('Failed to connect call.','err');App.call._cleanup();}
-      S.callData=null;
+        console.log('[CALL] Answer sent');
+      }catch(e){console.error('[CALL] Answer error:',e);toast('Failed to connect call.','err');App.call._cleanup();}
     },
 
-    reject(){clearTimeout(S._callDismiss);$('incomingCall').classList.add('hidden');if(S.callData){App.socket.emit('callRejected',{callerId:S.callData.callerId});S.callData=null;}},
+    reject(){
+      clearTimeout(S._callDismiss);
+      $('incomingCall').classList.add('hidden');
+      if(S.callData){App.socket.emit('callRejected',{callerId:S.callData.callerId});S.callData=null;}
+    },
 
+    // ── Called when remote accepted our call (ChatRix webrtc_answer pattern) ──
     async onAnswered({answer}){
       if(!S.pc)return;
+      console.log('[CALL] Got answer');
       try{
         await S.pc.setRemoteDescription(new RTCSessionDescription(answer));
-        // Flush any ICE candidates that arrived before remote desc was set
-        const buf=S._iceBuf||[];
-        S._iceBuf=[];
-        for(const c of buf){
-          try{await S.pc.addIceCandidate(new RTCIceCandidate(c));}catch(e){console.warn('Flush ICE err:',e);}
-        }
-        console.log('Remote desc set, flushed',buf.length,'buffered ICE candidates');
-        txt('callPhSt','Connecting...');
-      }catch(e){console.error('setRemoteDescription (caller) failed:',e);toast('Call connection failed.','err');App.call._cleanup();}
+        console.log('[CALL] Remote description set OK');
+      }catch(e){console.error('[CALL] setRemoteDescription error:',e);toast('Call connection failed.','err');App.call._cleanup();}
     },
 
     end(){App.socket.emit('endCall',{targetId:App.call.targetId});App.call._cleanup();},
@@ -1994,185 +1967,117 @@ const App={
     toggleMic(){
       App.call.micMuted=!App.call.micMuted;
       S.localStream?.getAudioTracks().forEach(t=>t.enabled=!App.call.micMuted);
-      const b=$('muteBtn');
-      b.classList.toggle('on',App.call.micMuted);
-      b.title=App.call.micMuted?'Unmute':'Mute';
+      $('muteBtn').classList.toggle('on',App.call.micMuted);
     },
-
     toggleCam(){
       App.call.camOff=!App.call.camOff;
       S.localStream?.getVideoTracks().forEach(t=>t.enabled=!App.call.camOff);
-      const b=$('camBtn');
-      b.classList.toggle('on',App.call.camOff);
-      b.title=App.call.camOff?'Turn on camera':'Turn off camera';
+      $('camBtn').classList.toggle('on',App.call.camOff);
     },
 
-    // ★ FIXED: Flip camera (front ↔ back)
+    // ── Flip camera ──
     async flipCamera(){
       if(!S.localStream||App.call.type!=='video')return;
       S.facingMode=S.facingMode==='user'?'environment':'user';
       try{
-        // Try exact facingMode first (works on most Android)
-        let newStream;
-        try{
-          newStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:S.facingMode}},audio:false});
-        }catch{
-          // Fallback without exact (works on iOS)
-          newStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:S.facingMode},audio:false});
-        }
-        const newVT=newStream.getVideoTracks()[0];
-        // Replace track in PeerConnection
+        let ns;
+        try{ns=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:S.facingMode}},audio:false});}
+        catch{ns=await navigator.mediaDevices.getUserMedia({video:{facingMode:S.facingMode},audio:false});}
+        const newVT=ns.getVideoTracks()[0];if(!newVT)throw new Error('No track');
         const sender=S.pc?.getSenders().find(s=>s.track?.kind==='video');
         if(sender)await sender.replaceTrack(newVT);
-        // Replace in local stream
         S.localStream.getVideoTracks().forEach(t=>{t.stop();S.localStream.removeTrack(t);});
         S.localStream.addTrack(newVT);
-        // Refresh local preview
         const lv=$('callLV');if(lv){lv.srcObject=null;lv.srcObject=S.localStream;}
-        toast(S.facingMode==='user'?'📷 Front camera':'📷 Back camera','info');
+        toast(S.facingMode==='user'?'📷 Front':'📷 Back','info');
       }catch(err){
-        console.error('Flip camera error:',err);
-        toast('Camera flip failed.','err');
-        S.facingMode=S.facingMode==='user'?'environment':'user'; // revert
+        console.error('[FLIP]',err);toast('Camera flip failed.','err');
+        S.facingMode=S.facingMode==='user'?'environment':'user';
       }
     },
 
     toggleSpk(){const v=$('callRV');if(!v)return;v.muted=!v.muted;$('spkBtn').classList.toggle('on',v.muted);},
+    togglePip(){App.call._pip=!App.call._pip;$('callOverlay').classList.toggle('pip-mode',App.call._pip);},
 
-    togglePip(){
-      App.call._pip=!App.call._pip;
-      $('callOverlay').classList.toggle('pip-mode',App.call._pip);
-    },
-
+    // ── Create PeerConnection (ChatRix proven pattern — simple & clean) ──
     _createPC(){
-      // Clean up any old PC
       if(S.pc){try{S.pc.close();}catch{}S.pc=null;}
-
       S.pc=new RTCPeerConnection(App.call.ICE);
+      console.log('[WebRTC] PeerConnection created');
 
-      // ── ICE candidate → send to other peer ──
+      // Send ICE candidates directly (ChatRix: no buffering needed)
       S.pc.onicecandidate=({candidate})=>{
         if(candidate){
           App.socket.emit('iceCandidate',{targetId:App.call.targetId,candidate});
+          console.log('[ICE] Candidate sent');
         }
       };
 
-      // ── Remote stream arrived ──
+      // Remote track received
       S.pc.ontrack=(event)=>{
-        console.log('ontrack fired, streams:',event.streams?.length,'track kind:',event.track?.kind);
-        const stream=event.streams?.[0];
-        if(!stream)return;
+        console.log('[WebRTC] ontrack:',event.track?.kind,'streams:',event.streams?.length);
+        const stream=event.streams?.[0];if(!stream)return;
         const rv=$('callRV');
-        // Only set srcObject if it changed (avoids flicker)
-        if(rv.srcObject!==stream){
-          rv.srcObject=stream;
-          console.log('Remote stream set on video element');
-        }
-        if(App.call.type==='video'){
-          rv.style.display='block';
-          $('callPh').style.display='none';
-        }
-        // iOS/Safari REQUIRE explicit play() call
-        rv.play().catch(e=>console.warn('rv.play() error:',e));
+        if(rv.srcObject!==stream){rv.srcObject=stream;}
+        if(App.call.type==='video'){rv.style.display='block';const ph=$('callPh');if(ph)ph.style.display='none';}
+        rv.play().catch(e=>console.warn('[WebRTC] play() err:',e));
       };
 
-      // ── Connection state ──
+      // Connection state
       S.pc.onconnectionstatechange=()=>{
         const state=S.pc?.connectionState;
-        console.log('Connection state:',state);
-        if(state==='connected'){
-          txt('callPhSt','Connected ✓');
-          if(!S.callTimer)App.call._startTimer();
-        }else if(state==='connecting'){
-          txt('callPhSt','Connecting...');
-        }else if(state==='failed'){
-          console.error('WebRTC connection FAILED');
-          toast('Call connection failed. Check network.','err');
-          App.call._cleanup();
-        }else if(state==='disconnected'){
+        console.log('[WebRTC] State:',state);
+        if(state==='connected'){txt('callPhSt','Connected ✓');if(!S.callTimer)App.call._startTimer();}
+        else if(state==='connecting'){txt('callPhSt','Connecting...');}
+        else if(state==='failed'){toast('Call failed — check network.','err');App.call._cleanup();}
+        else if(state==='disconnected'){
           txt('callPhSt','Reconnecting...');
-          // Wait 5s before cleanup (may auto-recover)
           clearTimeout(S._dcTimer);
-          S._dcTimer=setTimeout(()=>{
-            if(S.pc?.connectionState==='disconnected'){
-              App.call._cleanup();
-            }
-          },5000);
-        }else if(state==='closed'){
-          App.call._cleanup();
+          S._dcTimer=setTimeout(()=>{if(S.pc?.connectionState==='disconnected')App.call._cleanup();},6000);
         }
       };
 
-      // ── ICE connection state (more granular) ──
       S.pc.oniceconnectionstatechange=()=>{
         const st=S.pc?.iceConnectionState;
-        console.log('ICE connection state:',st);
-        if(st==='connected'||st==='completed'){
-          txt('callPhSt','Connected ✓');
-          if(!S.callTimer)App.call._startTimer();
-        }
-        if(st==='failed'){
-          console.error('ICE FAILED — trying ICE restart');
-          // Try ICE restart before giving up
-          if(S.pc&&S.pc.signalingState==='stable'){
-            App.call._iceRestart();
-          }
-        }
+        console.log('[ICE] State:',st);
+        if(st==='connected'||st==='completed'){txt('callPhSt','Connected ✓');if(!S.callTimer)App.call._startTimer();}
       };
-
-      // ── ICE gathering state ──
-      S.pc.onicegatheringstatechange=()=>{
-        console.log('ICE gathering:',S.pc?.iceGatheringState);
-      };
-
-      // ── Negotiation needed (for renegotiation) ──
-      S.pc.onnegotiationneeded=()=>{
-        console.log('Negotiation needed');
-      };
-    },
-
-    // ICE restart on failure
-    async _iceRestart(){
-      if(!S.pc)return;
-      try{
-        const offer=await S.pc.createOffer({iceRestart:true});
-        await S.pc.setLocalDescription(offer);
-        App.socket.emit('callUser',{targetId:App.call.targetId,callType:App.call.type,offer,isRestart:true});
-        console.log('ICE restart offer sent');
-      }catch(e){console.error('ICE restart failed:',e);}
     },
 
     _openOverlay(type,name,uid){
-      $('callOverlay').classList.remove('hidden');
-      $('callOverlay').classList.remove('pip-mode');
-      App.call._pip=false;
-      setAv($('callPhAv'),name||'?',uid);
-      txt('callPhName',name||'');txt('callPhSt','Calling...');
+      const o=$('callOverlay');o.classList.remove('hidden','pip-mode');App.call._pip=false;
+      setAv($('callPhAv'),name||'?',uid);txt('callPhName',name||'');txt('callPhSt','Calling...');
       txt('callTypeLabel',type==='video'?'Video Call':'Voice Call');
       $('camBtn').classList.toggle('hidden',type!=='video');
       $('flipCamBtn').classList.toggle('hidden',type!=='video');
-      $('callRV').style.display='none';$('callLV').style.display='none';$('callPh').style.display='flex';
+      $('callRV').style.display='none';$('callLV').style.display='none';
+      const ph=$('callPh');if(ph)ph.style.display='flex';
       App.call.micMuted=false;App.call.camOff=false;
-      $('muteBtn').classList.remove('on');
-      $('camBtn').classList.remove('on');
-      $('spkBtn').classList.remove('on');
+      $('muteBtn').classList.remove('on');$('camBtn').classList.remove('on');$('spkBtn').classList.remove('on');
     },
 
-    _startTimer(){S.callSecs=0;clearInterval(S.callTimer);S.callTimer=setInterval(()=>{S.callSecs++;txt('callTimer',fsecs(S.callSecs));},1000);},
+    _startTimer(){
+      S.callSecs=0;clearInterval(S.callTimer);
+      S.callTimer=setInterval(()=>{S.callSecs++;txt('callTimer',fsecs(S.callSecs));},1000);
+    },
 
     _cleanup(){
-      clearInterval(S.callTimer);S.callSecs=0;
-      S.localStream?.getTracks().forEach(t=>t.stop());S.localStream=null;
-      S.pc?.close();S.pc=null;
-      $('callOverlay').classList.add('hidden');
-      $('callOverlay').classList.remove('pip-mode');
-      App.call._pip=false;
+      console.log('[CALL] Cleanup');
+      clearInterval(S.callTimer);S.callTimer=null;S.callSecs=0;
+      clearTimeout(S._dcTimer);S._dcTimer=null;
+      if(S.localStream){S.localStream.getTracks().forEach(t=>t.stop());S.localStream=null;}
+      if(S.pc){try{S.pc.close();}catch{}S.pc=null;}
+      App.call.type=null;App.call.targetId=null;App.call.targetName=null;
+      App.call.micMuted=false;App.call.camOff=false;App.call._pip=false;
+      const o=$('callOverlay');if(o){o.classList.add('hidden');o.classList.remove('pip-mode');}
       const rv=$('callRV'),lv=$('callLV');
       if(rv){rv.srcObject=null;rv.style.display='none';}
       if(lv){lv.srcObject=null;lv.style.display='none';}
-      $('callPh').style.display='flex';txt('callTimer','00:00');
+      const ph=$('callPh');if(ph)ph.style.display='flex';
+      txt('callTimer','00:00');txt('callPhSt','Calling...');
     }
   }
+
 };
 
 // ── Draggable local video ─────────────────────────────────
@@ -2208,29 +2113,9 @@ function initDraggableLV(){
   document.addEventListener('touchend',onEnd);
 }
 
-// iOS keyboard fix: visualViewport resize keeps input visible
-function initKeyboardFix(){
-  if(!window.visualViewport)return;
-  window.visualViewport.addEventListener('resize',()=>{
-    const chatView=$('chatView');
-    if(!chatView||chatView.classList.contains('hidden'))return;
-    // When keyboard opens, set chat height to visual viewport height
-    const h=window.visualViewport.height;
-    chatView.style.height=h+'px';
-    // Keep messages scrolled to bottom
-    setTimeout(()=>App.chat._scroll(),50);
-  });
-  window.visualViewport.addEventListener('scroll',()=>{
-    const chatView=$('chatView');
-    if(!chatView||chatView.classList.contains('hidden'))return;
-    chatView.style.top=window.visualViewport.offsetTop+'px';
-  });
-}
-
 document.addEventListener('DOMContentLoaded',()=>{
   App.init();
   initDraggableLV();
-  initKeyboardFix();
   document.addEventListener('click',e=>{
     if(!e.target.closest('#moreBtn')&&!e.target.closest('#chMenu'))App.ui.closeMenu();
     if(!e.target.closest('#ctxMenu'))hideCtxMenu();
