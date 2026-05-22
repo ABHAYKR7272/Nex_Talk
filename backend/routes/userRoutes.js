@@ -24,7 +24,7 @@ router.get('/search', async (req, res) => {
           { displayName: { $regex: q, $options:'i' } },
         ]},
       ],
-    }).select("username displayName bio isOnline followers isPrivate profilePic")
+    }).select("username displayName bio isOnline followers following isPrivate profilePic avatar")
 
     const meId = me._id.toString();
     const result = users.map(u => ({
