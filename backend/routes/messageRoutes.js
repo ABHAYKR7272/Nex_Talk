@@ -43,7 +43,7 @@ async function getOrCreateConv(a, b) {
 router.get('/conversations', async (req, res) => {
   try {
     const convs = await Conversation.find({ participants: req.user._id })
-      .populate({ path: 'participants', select: 'username displayName profilePic isOnline lastSeen' })
+      .populate({ path: 'participants', select: 'username displayName profilePic avatar isOnline lastSeen' })
       .populate({ path: 'lastMessage', select: 'content type createdAt sender isRead' })
       .sort({ lastMessageAt: -1 });
 
