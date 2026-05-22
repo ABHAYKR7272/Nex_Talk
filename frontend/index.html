@@ -1452,20 +1452,12 @@ const App={
       sk.on('callAnswered',data=>App.call.onAnswered(data));
       sk.on('callRejected',()=>{toast('Call declined.','info');App.call._cleanup();});
       sk.on('callEnded',()=>App.call._cleanup());
-      // ICE candidate — buffer until remote description is set
+      // ICE candidate — direct add (Chatrix pattern — no buffering needed)
       sk.on('iceCandidate',async({candidate})=>{
-        if(!candidate)return;
-        if(!S.pc){console.warn('[ICE] No PC, dropping candidate');return;}
+        if(!candidate||!S.pc)return;
         try{
-          if(S.pc.remoteDescription&&S.pc.remoteDescription.type){
-            await S.pc.addIceCandidate(new RTCIceCandidate(candidate));
-            console.log('[ICE] Added OK');
-          }else{
-            // Buffer until remote desc is set
-            if(!S._iceBuf)S._iceBuf=[];
-            S._iceBuf.push(candidate);
-            console.log('[ICE] Buffered (no remote desc yet), total:',S._iceBuf.length);
-          }
+          await S.pc.addIceCandidate(new RTCIceCandidate(candidate));
+          console.log('[ICE] Candidate added OK');
         }catch(e){console.warn('[ICE] Add error:',e.message);}
       });
       App.socket.emit=(...a)=>sk.emit(...a);
@@ -1897,8 +1889,8 @@ const App={
       App.call._openOverlay(type,S.activeName,S.activeUid);
       if(type==='video'){$('callLV').srcObject=S.localStream;$('callLV').style.display='block';}
 
-      // Fetch fresh TURN credentials from backend (professional)
-      App.call.ICE = {iceServers: await App.call._fetchICE()};
+      // Use Chatrix ICE config (same pattern — works on different networks)
+      App.call.ICE = App.call._getICE();
       // Create PC → add tracks → create offer (ChatRix order)
       App.call._createPC();
       S.localStream.getTracks().forEach(t=>S.pc.addTrack(t,S.localStream));
@@ -1910,27 +1902,14 @@ const App={
       }catch(e){console.error('[CALL] Offer error:',e);toast('Failed to start call.','err');App.call._cleanup();}
     },
 
-    // ── Fetch TURN credentials from backend ──
-    async _fetchICE(){
-      try{
-        const d = await GET('/auth/turn-credentials');
-        console.log('[ICE] Fetched',d.iceServers?.length,'servers from backend');
-        if(d.iceServers&&d.iceServers.length>0)return d.iceServers;
-        throw new Error('empty');
-      }catch(e){
-        console.warn('[ICE] Fetch failed, using fallback TURN:',e.message);
-        // Free public TURN servers as fallback (works on real mobile networks)
-        return [
-          {urls:'stun:stun.l.google.com:19302'},
-          {urls:'stun:stun1.l.google.com:19302'},
-          {urls:'stun:stun2.l.google.com:19302'},
-          {urls:'stun:stun3.l.google.com:19302'},
-          {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
-          {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
-          {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
-          {urls:'turn:openrelay.metered.ca:80?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
-        ];
-      }
+    // ── ICE Servers — exact same as Chatrix (no TURN, just STUN) ──
+    _getICE(){
+      return {iceServers:[
+        {urls:'stun:stun.l.google.com:19302'},
+        {urls:'stun:stun1.l.google.com:19302'},
+        {urls:'stun:stun2.l.google.com:19302'},
+        {urls:'stun:stun.cloudflare.com:3478'},
+      ]};
     },
 
     // ── Get media with fallbacks ──
@@ -1972,19 +1951,13 @@ const App={
       App.call._openOverlay(callType,callerName,callerId);
       if(callType==='video'&&S.localStream){$('callLV').srcObject=S.localStream;$('callLV').style.display='block';}
 
-      // Fetch fresh TURN credentials from backend
-      App.call.ICE = {iceServers: await App.call._fetchICE()};
+      // Use Chatrix ICE config
+      App.call.ICE = App.call._getICE();
       // Create PC → add tracks → set remote → create answer
       App.call._createPC();
       if(S.localStream)S.localStream.getTracks().forEach(t=>S.pc.addTrack(t,S.localStream));
       try{
         await S.pc.setRemoteDescription(new RTCSessionDescription(offer));
-        // Flush buffered ICE candidates
-        if(S._iceBuf&&S._iceBuf.length){
-          console.log('[ICE] Flushing',S._iceBuf.length,'buffered candidates (callee)');
-          for(const c of S._iceBuf){try{await S.pc.addIceCandidate(new RTCIceCandidate(c));}catch{}}
-          S._iceBuf=[];
-        }
         const answer=await S.pc.createAnswer();
         await S.pc.setLocalDescription(answer);
         App.socket.emit('callAccepted',{callerId,answer});
@@ -2005,12 +1978,6 @@ const App={
       try{
         await S.pc.setRemoteDescription(new RTCSessionDescription(answer));
         console.log('[CALL] Remote description set OK');
-        // Flush buffered ICE candidates
-        if(S._iceBuf&&S._iceBuf.length){
-          console.log('[ICE] Flushing',S._iceBuf.length,'buffered candidates');
-          for(const c of S._iceBuf){try{await S.pc.addIceCandidate(new RTCIceCandidate(c));}catch{}}
-          S._iceBuf=[];
-        }
       }catch(e){console.error('[CALL] setRemoteDescription error:',e);toast('Call connection failed.','err');App.call._cleanup();}
     },
 
@@ -2055,7 +2022,6 @@ const App={
 
     // ── Create PeerConnection (ChatRix proven pattern — simple & clean) ──
     _createPC(){
-      S._iceBuf=[];
       if(S.pc){try{S.pc.close();}catch{}S.pc=null;}
       S.pc=new RTCPeerConnection(App.call.ICE);
       console.log('[WebRTC] PeerConnection created');
@@ -2068,14 +2034,15 @@ const App={
         }
       };
 
-      // Remote track received
+      // Remote track received — Chatrix pattern
       S.pc.ontrack=(event)=>{
-        console.log('[WebRTC] ontrack:',event.track?.kind,'streams:',event.streams?.length);
-        const stream=event.streams?.[0];if(!stream)return;
-        const rv=$('callRV');
-        if(rv.srcObject!==stream){rv.srcObject=stream;}
-        if(App.call.type==='video'){rv.style.display='block';const ph=$('callPh');if(ph)ph.style.display='none';}
-        rv.play().catch(e=>console.warn('[WebRTC] play() err:',e));
+        console.log('[WebRTC] ontrack:',event.track?.kind);
+        if(event.streams&&event.streams[0]){
+          const rv=$('callRV');
+          rv.srcObject=event.streams[0];
+          if(App.call.type==='video'){rv.style.display='block';const ph=$('callPh');if(ph)ph.style.display='none';}
+          rv.play().catch(e=>console.warn('[WebRTC] play() err:',e));
+        }
       };
 
       // Connection state
