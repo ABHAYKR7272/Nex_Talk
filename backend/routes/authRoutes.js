@@ -135,3 +135,40 @@ router.delete('/delete-account', protect, async (req, res) => {
 });
 
 module.exports = router;
+
+// ── GET /api/auth/turn-credentials ───────────────────────
+// Returns TURN server credentials dynamically (professional approach)
+// Frontend fetches this before every call — credentials expire after 24h
+router.get('/turn-credentials', protect, async (req, res) => {
+  try {
+    const apiKey = process.env.METERED_API_KEY;
+
+    // If no API key set — return STUN only (still works on same network)
+    if (!apiKey || apiKey === 'your_metered_api_key_here') {
+      return res.json({
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun.cloudflare.com:3478' },
+        ]
+      });
+    }
+
+    // Fetch live credentials from Metered.ca API
+    const response = await fetch(
+      `https://nextalk.metered.live/api/v1/turn/credentials?apiKey=${apiKey}`
+    );
+    if (!response.ok) throw new Error('Metered API error');
+    const iceServers = await response.json();
+    res.json({ iceServers });
+  } catch (e) {
+    // Fallback to STUN only
+    res.json({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ]
+    });
+  }
+});
