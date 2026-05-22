@@ -28,7 +28,7 @@
   --glow-n:0 0 20px rgba(0,245,255,.35),0 0 40px rgba(0,245,255,.1);
   --r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;--r50:50%;
 }
-html,body{height:100%;font-family:'Sora',sans-serif;background:var(--bg0);color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased}
+html,body{height:100%;height:100dvh;font-family:'Sora',sans-serif;background:var(--bg0);color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased}
 button,input,textarea,select{font-family:inherit;outline:none;border:none}
 img{display:block;max-width:100%}
 ::-webkit-scrollbar{width:3px;height:3px}
@@ -130,7 +130,7 @@ a{color:var(--neon1);text-decoration:none}
 
 /* ═══ AUTH ═══ */
 #authScreen{
-  height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100vh;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:16px;gap:24px;background:var(--bg0);overflow:hidden;position:relative;
 }
 #authScreen::before{
@@ -197,7 +197,7 @@ a{color:var(--neon1);text-decoration:none}
 @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 
 /* ═══ APP LAYOUT ═══ */
-#appScreen{height:100vh;display:flex;overflow:hidden;position:relative}
+#appScreen{height:100vh;height:100dvh;display:flex;overflow:hidden;position:relative}
 
 /* SIDEBAR */
 #sidebar{
@@ -376,8 +376,8 @@ a{color:var(--neon1);text-decoration:none}
 .ch-menu .danger{color:var(--r)}
 
 /* MESSAGES */
-.msgs-wrap{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:0;
-           scroll-behavior:smooth}
+.msgs-wrap{flex:1;min-height:0;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:0;
+           scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
 .msg-day{text-align:center;font-size:10px;color:var(--t3);margin:14px 0;position:relative;letter-spacing:.5px}
 .msg-day::before,.msg-day::after{content:'';position:absolute;top:50%;width:35%;height:1px;background:var(--bd)}
 .msg-day::before{left:0}.msg-day::after{right:0}
@@ -448,9 +448,9 @@ a{color:var(--neon1);text-decoration:none}
 .mrow .media-bubble:hover .msg-actions{display:flex}
 
 /* INPUT AREA */
-.ch-inp{display:flex;align-items:flex-end;gap:7px;padding:8px 10px 8px;
+.ch-inp{display:flex;align-items:flex-end;gap:7px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px)) 10px;
          border-top:1px solid var(--bd);flex-shrink:0;
-         background:rgba(5,7,18,.95);backdrop-filter:blur(20px)}
+         background:rgba(5,7,18,.95);backdrop-filter:blur(20px);position:relative;z-index:2;}
 .ch-ta{flex:1;background:var(--bg2);border:1.5px solid var(--bd);border-radius:var(--r16);
         padding:10px 14px;color:var(--t1);font-size:13px;resize:none;
         max-height:120px;min-height:42px;line-height:1.5;transition:all .2s;font-family:inherit}
@@ -496,6 +496,7 @@ a{color:var(--neon1);text-decoration:none}
   animation:fadeIn .25s ease;
   transition:all .3s ease;
   overflow:hidden;
+  height:100%;height:100dvh;
 }
 #callOverlay.pip-mode{
   width:180px;height:260px;
@@ -545,8 +546,8 @@ a{color:var(--neon1);text-decoration:none}
 /* CALL CONTROLS - beautiful floating pill, always on top */
 .call-ctrl{
   display:flex;justify-content:center;align-items:center;gap:12px;
-  padding:0;flex-shrink:0;
-  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  flex-shrink:0;
+  position:absolute;bottom:calc(28px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);
   z-index:20;
   background:rgba(10,12,28,0.72);
   backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
@@ -606,18 +607,21 @@ a{color:var(--neon1);text-decoration:none}
 
 /* ═══ MOBILE RESPONSIVE ═══ */
 @media(max-width:767px){
-  #sidebar{position:absolute;inset:0;width:100%;min-width:unset;transform:translateX(0)}
+  #sidebar{position:absolute;inset:0;width:100%;min-width:unset;transform:translateX(0);height:100%;height:100dvh;}
   #sidebar.sb-hidden{transform:translateX(-100%)}
-  #mainPanel{position:absolute;inset:0;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  #mainPanel{position:absolute;inset:0;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);height:100%;height:100dvh;}
   #mainPanel.mp-show{transform:translateX(0)}
   .frow{grid-template-columns:1fr}
   .pv-stats{gap:18px}
   #welcomeView{display:none!important}
   .bub{max-width:min(78%,280px)}
   .bub-img-wrap,.bub-vid-wrap{max-width:200px;width:200px}
-  #callOverlay.pip-mode{width:150px;height:210px;bottom:90px;right:10px}
-  .call-ctrl{bottom:20px;gap:8px;padding:8px 16px}
-  .cctrl{width:48px;height:48px;border-radius:24px}
+  #callOverlay.pip-mode{width:150px;height:210px;bottom:calc(90px + env(safe-area-inset-bottom,0px));right:10px}
+  .call-ctrl{bottom:calc(16px + env(safe-area-inset-bottom,0px));gap:8px;padding:8px 16px;white-space:nowrap;}
+  .cctrl{width:44px;height:44px;border-radius:22px}
+  #chatView{height:100dvh;}
+  .msgs-wrap{flex:1;min-height:0;}
+  .ch-inp{padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));}
 }
 @media(min-width:768px) and (max-width:1023px){#sidebar{width:260px;min-width:260px}}
 @media(min-width:1024px){#sidebar{width:300px;min-width:300px}}
@@ -770,9 +774,12 @@ a{color:var(--neon1);text-decoration:none}
 /* Chat input bar */
 .ch-inp{
   display:flex;align-items:flex-end;gap:8px;
-  padding:10px 14px 12px;
+  padding:10px 14px calc(12px + env(safe-area-inset-bottom,0px)) 14px;
   background:var(--bg1);
   border-top:1px solid var(--bd);
+  flex-shrink:0;
+  position:relative;
+  z-index:2;
 }
 
 /* Day separator */
@@ -891,6 +898,7 @@ a{color:var(--neon1);text-decoration:none}
 /* Msg actions (unsend btn) */
 .msg-actions{position:absolute;top:-8px;right:0;display:none;}
 .bub-wrap:hover .msg-actions,.media-bubble:hover .msg-actions{display:flex;}
+.bub-wrap.touch-show .msg-actions,.media-bubble.touch-show .msg-actions{display:flex;}
 .bub-wrap{position:relative;}
 .msg-act-btn{
   width:24px;height:24px;border-radius:8px;
@@ -1114,7 +1122,7 @@ a{color:var(--neon1);text-decoration:none}
     </div>
 
     <!-- Chat -->
-    <div id="chatView" class="hidden" style="display:flex;flex-direction:column;height:100%">
+    <div id="chatView" class="hidden" style="display:flex;flex-direction:column;height:100%;min-height:0;">
       <div class="ch-head">
         <button class="bico bico-sm" onclick="App.ui.back()" title="Back">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1438,16 +1446,27 @@ const App={
         if(dot)dot.className='av-dot '+(isOnline?'dot-on':'dot-off');
       });
       sk.on('followRequest',({from})=>{toast('@'+from.username+' sent you a request','info');App.requests.load();});
-      sk.on('requestAccepted',({by})=>{toast('@'+by.username+' accepted your request!','ok');App.convs.load();});
+      sk.on('requestAccepted',({by})=>{toast('@'+(by?.username||'someone')+' accepted your request!','ok');App.convs.load();});
+      sk.on('followAccepted',({by})=>{toast('@'+(by?.username||'someone')+' accepted your request!','ok');App.convs.load();});
       sk.on('incomingCall',data=>App.call.onIncoming(data));
       sk.on('callAnswered',data=>App.call.onAnswered(data));
       sk.on('callRejected',()=>{toast('Call declined.','info');App.call._cleanup();});
       sk.on('callEnded',()=>App.call._cleanup());
-      // ICE candidate — direct add, no buffering (ChatRix proven)
+      // ICE candidate — buffer until remote description is set
       sk.on('iceCandidate',async({candidate})=>{
-        if(!candidate||!S.pc)return;
-        try{await S.pc.addIceCandidate(new RTCIceCandidate(candidate));console.log('[ICE] Added OK');}
-        catch(e){console.warn('[ICE] Add error:',e.message);}
+        if(!candidate)return;
+        if(!S.pc){console.warn('[ICE] No PC, dropping candidate');return;}
+        try{
+          if(S.pc.remoteDescription&&S.pc.remoteDescription.type){
+            await S.pc.addIceCandidate(new RTCIceCandidate(candidate));
+            console.log('[ICE] Added OK');
+          }else{
+            // Buffer until remote desc is set
+            if(!S._iceBuf)S._iceBuf=[];
+            S._iceBuf.push(candidate);
+            console.log('[ICE] Buffered (no remote desc yet), total:',S._iceBuf.length);
+          }
+        }catch(e){console.warn('[ICE] Add error:',e.message);}
       });
       App.socket.emit=(...a)=>sk.emit(...a);
     },
@@ -1523,7 +1542,7 @@ const App={
           const lm=c.lastMessage;
           let preview=lm?(lm.type!=='text'?'📎 '+lm.content:(String(lm.sender)===String(S.user._id)?'You: ':'')+lm.content):'Say hello 👋';
           if(preview.length>38)preview=preview.slice(0,38)+'…';
-          const avHtml=u.avatar?`<img src="${fileURL(u.avatar)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`:`${initials(u.displayName)}`;
+          const avHtml=(u.avatar||u.profilePic)?`<img src="${fileURL(u.avatar||u.profilePic)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.style.display='none'">`:`${initials(u.displayName)}`;
           return`<div class="cli" data-uid="${u._id}" onclick="App.chat.open('${u._id}','${esc(u.displayName)}','${u.username}')">
             <div class="av av40" style="background:${avGrad(u._id)}">${avHtml}<div class="av-dot ${u.isOnline?'dot-on':'dot-off'}"></div></div>
             <div class="cli-info"><div class="cli-name">${esc(u.displayName)}</div><div class="cli-last">${esc(preview)}</div></div>
@@ -1564,7 +1583,7 @@ const App={
         if(!following.length){pan.innerHTML='<div class="list-empty">Not following anyone</div>';return;}
         pan.innerHTML=following.map(u=>`
           <div class="fol-item">
-            <div class="av av40" style="background:${avGrad(u._id)}">${u.avatar?`<img src="${fileURL(u.avatar)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`:initials(u.displayName)}<div class="av-dot ${u.isOnline?'dot-on':'dot-off'}"></div></div>
+            <div class="av av40" style="background:${avGrad(u._id)}">${(u.avatar||u.profilePic)?`<img src="${fileURL(u.avatar||u.profilePic)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.style.display='none'">`:initials(u.displayName)}<div class="av-dot ${u.isOnline?'dot-on':'dot-off'}"></div></div>
             <div class="req-info flex-1" style="cursor:pointer" onclick="App.profile.show('${u.username}')">
               <div class="req-name">${esc(u.displayName)}</div><div class="req-un">@${u.username}</div>
             </div>
@@ -1753,6 +1772,19 @@ const App={
       row.innerHTML=(!isMe?avEl:'')+html;
       wrap.appendChild(row);
       if(!skipScroll)App.chat._scroll();
+      // Mobile: long press to show unsend
+      if(isMe){
+        const bw=row.querySelector('.bub-wrap,.media-bubble');
+        if(bw){
+          let lt=null;
+          bw.addEventListener('touchstart',()=>{lt=setTimeout(()=>{
+            document.querySelectorAll('.bub-wrap.touch-show,.media-bubble.touch-show').forEach(e=>e.classList.remove('touch-show'));
+            bw.classList.add('touch-show');
+          },500);},{passive:true});
+          bw.addEventListener('touchend',()=>clearTimeout(lt),{passive:true});
+          bw.addEventListener('touchmove',()=>clearTimeout(lt),{passive:true});
+        }
+      }
     },
 
     async send(){
@@ -1878,17 +1910,25 @@ const App={
       }catch(e){console.error('[CALL] Offer error:',e);toast('Failed to start call.','err');App.call._cleanup();}
     },
 
-    // ── Fetch TURN credentials from backend (like Telegram/Instagram) ──
+    // ── Fetch TURN credentials from backend ──
     async _fetchICE(){
       try{
         const d = await GET('/auth/turn-credentials');
         console.log('[ICE] Fetched',d.iceServers?.length,'servers from backend');
-        return d.iceServers;
+        if(d.iceServers&&d.iceServers.length>0)return d.iceServers;
+        throw new Error('empty');
       }catch(e){
-        console.warn('[ICE] Fetch failed, using STUN only:',e.message);
+        console.warn('[ICE] Fetch failed, using fallback TURN:',e.message);
+        // Free public TURN servers as fallback (works on real mobile networks)
         return [
           {urls:'stun:stun.l.google.com:19302'},
           {urls:'stun:stun1.l.google.com:19302'},
+          {urls:'stun:stun2.l.google.com:19302'},
+          {urls:'stun:stun3.l.google.com:19302'},
+          {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+          {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+          {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
+          {urls:'turn:openrelay.metered.ca:80?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
         ];
       }
     },
@@ -1939,6 +1979,12 @@ const App={
       if(S.localStream)S.localStream.getTracks().forEach(t=>S.pc.addTrack(t,S.localStream));
       try{
         await S.pc.setRemoteDescription(new RTCSessionDescription(offer));
+        // Flush buffered ICE candidates
+        if(S._iceBuf&&S._iceBuf.length){
+          console.log('[ICE] Flushing',S._iceBuf.length,'buffered candidates (callee)');
+          for(const c of S._iceBuf){try{await S.pc.addIceCandidate(new RTCIceCandidate(c));}catch{}}
+          S._iceBuf=[];
+        }
         const answer=await S.pc.createAnswer();
         await S.pc.setLocalDescription(answer);
         App.socket.emit('callAccepted',{callerId,answer});
@@ -1952,13 +1998,19 @@ const App={
       if(S.callData){App.socket.emit('callRejected',{callerId:S.callData.callerId});S.callData=null;}
     },
 
-    // ── Called when remote accepted our call (ChatRix webrtc_answer pattern) ──
+    // ── Called when remote accepted our call ──
     async onAnswered({answer}){
       if(!S.pc)return;
       console.log('[CALL] Got answer');
       try{
         await S.pc.setRemoteDescription(new RTCSessionDescription(answer));
         console.log('[CALL] Remote description set OK');
+        // Flush buffered ICE candidates
+        if(S._iceBuf&&S._iceBuf.length){
+          console.log('[ICE] Flushing',S._iceBuf.length,'buffered candidates');
+          for(const c of S._iceBuf){try{await S.pc.addIceCandidate(new RTCIceCandidate(c));}catch{}}
+          S._iceBuf=[];
+        }
       }catch(e){console.error('[CALL] setRemoteDescription error:',e);toast('Call connection failed.','err');App.call._cleanup();}
     },
 
@@ -1984,9 +2036,11 @@ const App={
         try{ns=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:S.facingMode}},audio:false});}
         catch{ns=await navigator.mediaDevices.getUserMedia({video:{facingMode:S.facingMode},audio:false});}
         const newVT=ns.getVideoTracks()[0];if(!newVT)throw new Error('No track');
-        const sender=S.pc?.getSenders().find(s=>s.track?.kind==='video');
+        const sender=S.pc?.getSenders().find(s=>s.track&&s.track.kind==='video');
         if(sender)await sender.replaceTrack(newVT);
-        S.localStream.getVideoTracks().forEach(t=>{t.stop();S.localStream.removeTrack(t);});
+        // Stop and remove ONLY old video tracks (keep audio!)
+        const oldVideoTracks=[...S.localStream.getVideoTracks()];
+        oldVideoTracks.forEach(t=>{t.stop();S.localStream.removeTrack(t);});
         S.localStream.addTrack(newVT);
         const lv=$('callLV');if(lv){lv.srcObject=null;lv.srcObject=S.localStream;}
         toast(S.facingMode==='user'?'📷 Front':'📷 Back','info');
@@ -2001,6 +2055,7 @@ const App={
 
     // ── Create PeerConnection (ChatRix proven pattern — simple & clean) ──
     _createPC(){
+      S._iceBuf=[];
       if(S.pc){try{S.pc.close();}catch{}S.pc=null;}
       S.pc=new RTCPeerConnection(App.call.ICE);
       console.log('[WebRTC] PeerConnection created');
@@ -2040,7 +2095,17 @@ const App={
       S.pc.oniceconnectionstatechange=()=>{
         const st=S.pc?.iceConnectionState;
         console.log('[ICE] State:',st);
-        if(st==='connected'||st==='completed'){txt('callPhSt','Connected ✓');if(!S.callTimer)App.call._startTimer();}
+        if(st==='connected'||st==='completed'){
+          txt('callPhSt','Connected ✓');
+          if(!S.callTimer)App.call._startTimer();
+          const ph=$('callPh');
+          // For voice call, keep showing avatar but update status
+          if(App.call.type==='video'&&$('callRV').srcObject){
+            $('callRV').style.display='block';
+            if(ph)ph.style.display='none';
+          }
+        }
+        if(st==='failed'){toast('Network error. Try again.','err');App.call._cleanup();}
       };
     },
 
@@ -2119,6 +2184,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('click',e=>{
     if(!e.target.closest('#moreBtn')&&!e.target.closest('#chMenu'))App.ui.closeMenu();
     if(!e.target.closest('#ctxMenu'))hideCtxMenu();
+    if(!e.target.closest('.bub-wrap')&&!e.target.closest('.media-bubble')){
+      document.querySelectorAll('.bub-wrap.touch-show,.media-bubble.touch-show').forEach(el=>el.classList.remove('touch-show'));
+    }
   });
   // popstate: only go back on real browser history events (not file picker on mobile)
   window.addEventListener('popstate',(e)=>{
@@ -2126,7 +2194,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   window.addEventListener('resize',()=>{
     if(!S.isMobile()){$('sidebar').classList.remove('sb-hidden');$('mainPanel').classList.remove('mp-show');}
+    else App.chat._scroll(); // scroll msgs on keyboard open/close
   });
+  // iOS Safari: ensure input stays above keyboard
+  const msgInp=$('msgInp');
+  if(msgInp){
+    msgInp.addEventListener('focus',()=>{
+      setTimeout(()=>{msgInp.scrollIntoView({behavior:'smooth',block:'nearest'});App.chat._scroll();},350);
+    });
+  }
   $('callOverlay').addEventListener('click',e=>{
     if(App.call._pip&&!e.target.closest('.cctrl'))App.call.togglePip();
   });
