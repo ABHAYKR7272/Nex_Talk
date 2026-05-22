@@ -101,7 +101,11 @@ module.exports = (io) => {
     });
 
     socket.on('notifyFollow',  ({ targetId }) => io.to(targetId).emit('followRequest',  { from: { _id: uid, username: socket.user.username, displayName: socket.user.displayName } }));
-    socket.on('notifyAccept',  ({ toId })     => io.to(toId).emit('followAccepted',     { by:   { _id: uid, username: socket.user.username } }));
+    socket.on('notifyAccept',  ({ toId }) => {
+      const payload = { by: { _id: uid, username: socket.user.username, displayName: socket.user.displayName } };
+      io.to(toId).emit('followAccepted', payload);
+      io.to(toId).emit('requestAccepted', payload); // backward compat
+    });
 
     socket.on('disconnect', async () => {
       online.delete(uid);
